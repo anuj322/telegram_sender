@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Message - Telegram Message Scheduler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .time-inputs .form-group {
+            margin-bottom: 0;
+        }
+
+        .time-inputs label {
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .time-inputs input {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .group-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .group-option {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .group-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .group-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .time-inputs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Schedule Message</h1>
+            <p>Choose when you want to send your message</p>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ How it works:</strong> Select a group, write your message, and choose the exact time to send it.
+        </div>
+
+        <form id="scheduleForm" method="POST" action="/schedule_message">
+            <div class="form-section">
+                <h3>📝 Select Group</h3>
+                <div class="group-list">
+                    {% for group in groups %}
+                    <label class="group-option">
+                        <input type="radio" name="group_id" value="{{ group.id }}" required>
+                        <strong>{{ group.title }}</strong>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>💬 Message Content</h3>
+                <div class="form-group">
+                    <label for="message">Your Message *</label>
+                    <textarea id="message" name="message" required placeholder="Type your message here..."></textarea>
+                    <div class="error" id="messageError"></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>⏰ Send Time</h3>
+                <div class="time-inputs">
+                    <div class="form-group">
+                        <label for="hour">Hour (00-23)</label>
+                        <input type="number" id="hour" name="hour" min="0" max="23" value="12" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="minute">Minute (00-59)</label>
+                        <input type="number" id="minute" name="minute" min="0" max="59" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="second">Second (00-59)</label>
+                        <input type="number" id="second" name="second" min="0" max="59" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="millisecond">Millisecond (0-999)</label>
+                        <input type="number" id="millisecond" name="millisecond" min="0" max="999" value="0" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Schedule Message</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #666; font-size: 14px;">Scheduling your message...</p>
+        </div>
+
+        <div class="footer">
+            {{ watermark }}
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('scheduleForm');
+        const messageInput = document.getElementById('message');
+        const messageError = document.getElementById('messageError');
+
+        // Validation
+        messageInput.addEventListener('blur', function() {
+            if (this.value.trim().length === 0) {
+                messageError.textContent = 'Message cannot be empty';
+            } else {
+                messageError.textContent = '';
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            // Validate message
+            if (messageInput.value.trim().length === 0) {
+                e.preventDefault();
+                messageError.textContent = 'Message cannot be empty';
+                messageInput.focus();
+                return;
+            }
+
+            // Validate group selection
+            const selectedGroup = document.querySelector('input[name="group_id"]:checked');
+            if (!selectedGroup) {
+                e.preventDefault();
+                alert('Please select a group');
+                return;
+            }
+
+            // Show loading state
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            form.style.display = 'none';
+        });
+
+        // Format time inputs
+        function formatTimeInput(input, max) {
+            input.addEventListener('input', function() {
+                let value = this.value;
+                if (value.length === 2 && parseInt(value) > max) {
+                    this.value = String(max).padStart(2, '0');
+                }
+            });
+        }
+
+        formatTimeInput(document.getElementById('hour'), 23);
+        formatTimeInput(document.getElementById('minute'), 59);
+        formatTimeInput(document.getElementById('second'), 59);
+        formatTimeInput(document.getElementById('millisecond'), 999);
+    </script>
+</body>
+</html>

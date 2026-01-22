@@ -1,0 +1,6 @@
+# keep
+gunicorn==23.0.0
+Flask==3.1.2
+telethon==1.41.1
+requests==2.32.4
+# remove if not using FastAPI: fastapi uvicorn starlette pydantic anyio annotated-types h11 sniffio typing-inspection
