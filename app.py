@@ -46,7 +46,7 @@ def verify():
         api_hash = session.get('api_hash')
         phone = session.get('phone')
         phone_code_hash = session.get('phone_code_hash', None)
-
+#hello 
         if not all([api_id, api_hash, phone, phone_code_hash]):
             return render_template('error.html', error="Session expired. Please login again", watermark='— anuj_creation'), 401
 
