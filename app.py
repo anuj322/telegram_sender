@@ -37,7 +37,7 @@ def send_code():
 
     asyncio.run(start_client())
     return render_template('login.html', watermark='— anuj_creation')
-# my apps 
+# my apps this is my app
 @app.route('/verify', methods=['POST'])
 def verify():
     try:
