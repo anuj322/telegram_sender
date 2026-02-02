@@ -1,4 +1,4 @@
-# this is my app
+# this is my
 import os
 import asyncio
 import time
