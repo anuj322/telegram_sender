@@ -1,0 +1,10 @@
+version: '3'
+services:
+  my-container:
+    image: anujp4061/telegram-sender:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 80:5000
+    restart: always
